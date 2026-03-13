@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f97316">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>FILTER GROUPS - Solar CRM</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Hind:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google API Client -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        hindi: ['Hind', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        },
+                        solar: {
+                            light: '#fef3c7',
+                            DEFAULT: '#f59e0b',
+                            dark: '#d97706',
+                        }
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'fade-in': 'fadeIn 0.2s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Poppins', sans-serif; background: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .gradient-bg { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        .solar-gradient { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        
+        /* Custom Range Slider */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #f97316; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #fed7aa; border-radius: 2px; }
+        
+        .status-badge { transition: all 0.3s ease; }
+        .status-badge:hover { transform: scale(1.05); }
+        
+        @media (max-width: 640px) {
+            .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; }
+            .mobile-content { padding-bottom: 80px; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 overflow-x-hidden">
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center gradient-bg">
+        <div class="w-full max-w-md p-6 mx-4 bg-white rounded-2xl shadow-2xl animate-slide-up">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-solar-panel text-3xl text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-1">FILTER GROUPS</h1>
+                <p class="text-sm text-gray-500">Solar EPC & EV Charging Solutions</p>
+                <div class="mt-2 inline-flex items-center px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
+                    <i class="fas fa-sun mr-1"></i> PM Surya Ghar Yojana
+                </div>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">User ID / Mobile</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="loginId" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all" placeholder="Enter ID or Mobile" required>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                        <input type="password" id="loginPassword" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all" placeholder="Enter Password" required>
+                        <button type="button" onclick="togglePassword()" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="rounded text-orange-500 focus:ring-orange-500 mr-2">
+                        <span class="text-gray-600">Remember me</span>
+                    </label>
+                    <a href="#" class="text-orange-600 hover:text-orange-700 font-medium">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </button>
+
+                <div class="relative my-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                    </div>
+                </div>
+
+                <button type="button" onclick="googleSignIn()" class="w-full py-3 border border-gray-300 rounded-xl flex items-center justify-center space-x-2 hover:bg-gray-50 transition-colors">
+                    <img src="https://www.google.com/favicon.ico" class="w-5 h-5" alt="Google">
+                    <span class="font-medium text-gray-700">Google Sign In</span>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">Don't have an account? <button onclick="showRegistration()" class="text-orange-600 font-semibold hover:underline">Register as Agent</button></p>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-gray-100 text-center text-xs text-gray-500">
+                <p>Contact: 9453548609</p>
+                <p>Filtergroups.in@gmail.com</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="appContainer" class="hidden min-h-screen flex flex-col">
+        
+        <!-- Header -->
+        <header class="gradient-bg text-white shadow-lg sticky top-0 z-40">
+            <div class="flex items-center justify-between px-4 py-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                        <i class="fas fa-solar-panel text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">FILTER GROUPS</h1>
+                        <p class="text-xs text-orange-100 opacity-90">Solar CRM System</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="showNotifications()" class="relative p-2 hover:bg-white/20 rounded-full transition-colors">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full animate-pulse"></span>
+                    </button>
+                    <button onclick="toggleProfile()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/30">
+                        <i class="fas fa-user text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Role-Based Navigation -->
+        <nav id="mainNav" class="bg-white border-b border-gray-200 overflow-x-auto hide-scrollbar">
+            <div class="flex space-x-1 p-2 min-w-max">
+                <button onclick="switchTab('dashboard')" class="nav-btn active px-4 py-2 rounded-lg font-medium text-sm transition-all bg-orange-50 text-orange-600 border border-orange-200">
+                    <i class="fas fa-home mr-2"></i>Dashboard
+                </button>
+                <button onclick="switchTab('leads')" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-50 transition-all">
+                    <i class="fas fa-users mr-2"></i>Leads
+                </button>
+                <button onclick="switchTab('projects')" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-50 transition-all">
+                    <i class="fas fa-project-diagram mr-2"></i>Projects
+                </button>
+                <button onclick="switchTab('calculator')" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-50 transition-all">
+                    <i class="fas fa-calculator mr-2"></i>Calculator
+                </button>
+                <button onclick="switchTab('agents')" class="nav-btn px-4 py-2 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-50 transition-all admin-only hidden">
+                    <i class="fas fa-user-tie mr-2"></i>Agents
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 mobile-content overflow-y-auto bg-gray-50">
+            
+            <!-- Dashboard View -->
+            <div id="dashboardView" class="view-section p-4 space-y-4 animate-fade-in">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-white p-4 rounded-2xl card-shadow border-l-4 border-orange-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-gray-500 uppercase">Total Leads</span>
+                            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-orange-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800" id="totalLeads">0</p>
+                        <p class="text-xs text-green-600 mt-1"><i class="fas fa-arrow-up mr-1"></i>+12 this week</p>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-2xl card-shadow border-l-4 border-blue-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-gray-500 uppercase">Active Projects</span>
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-solar-panel text-blue-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800" id="activeProjects">0</p>
+                        <p class="text-xs text-gray-500 mt-1">In progress</p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-2xl card-shadow border-l-4 border-green-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-gray-500 uppercase">Capacity</span>
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-bolt text-green-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800"><span id="totalCapacity">0</span> <span class="text-sm font-normal text-gray-500">kW</span></p>
+                        <p class="text-xs text-gray-500 mt-1">Installed</p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-2xl card-shadow border-l-4 border-purple-500">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-gray-500 uppercase">Commission</span>
+                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-rupee-sign text-purple-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <p class="text-2xl font-bold text-gray-800">₹<span id="totalCommission">0</span></p>
+                        <p class="text-xs text-green-600 mt-1">Earned</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-2xl p-4 card-shadow">
+                    <h3 class="font-bold text-gray-800 mb-3">Quick Actions</h3>
+                    <div class="grid grid-cols-4 gap-3">
+                        <button onclick="openAddLead()" class="flex flex-col items-center p-3 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors">
+                            <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-orange-200">
+                                <i class="fas fa-plus text-white"></i>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">Add Lead</span>
+                        </button>
+                        
+                        <button onclick="openSiteSurvey()" class="flex flex-col items-center p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition-colors">
+                            <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-blue-200">
+                                <i class="fas fa-map-marker-alt text-white"></i>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">Site Survey</span>
+                        </button>
+
+                        <button onclick="openCalculator()" class="flex flex-col items-center p-3 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">
+                            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-green-200">
+                                <i class="fas fa-calculator text-white"></i>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">Calculate</span>
+                        </button>
+
+                        <button onclick="openWhatsApp()" class="flex flex-col items-center p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                            <div class="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-emerald-200">
+                                <i class="fab fa-whatsapp text-white text-lg"></i>
+                            </div>
+                            <span class="text-xs font-medium text-gray-700">WhatsApp</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Leads -->
+                <div class="bg-white rounded-2xl p-4 card-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-800">Recent Leads</h3>
+                        <button onclick="switchTab('leads')" class="text-sm text-orange-600 font-medium hover:underline">View All</button>
+                    </div>
+                    <div id="recentLeadsList" class="space-y-3">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="bg-white rounded-2xl p-4 card-shadow">
+                    <h3 class="font-bold text-gray-800 mb-3">Performance Analytics</h3>
+                    <canvas id="performanceChart" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Leads Management View -->
+            <div id="leadsView" class="view-section hidden p-4 space-y-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex-1 mr-3">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" id="searchLeads" placeholder="Search leads..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" onkeyup="filterLeads()">
+                        </div>
+                    </div>
+                    <button onclick="openAddLead()" class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-lg hover:bg-orange-600 transition-colors">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Filter Chips -->
+                <div class="flex space-x-2 overflow-x-auto hide-scrollbar pb-2">
+                    <button onclick="filterByStatus('all')" class="px-4 py-1.5 bg-orange-500 text-white rounded-full text-sm font-medium whitespace-nowrap">All</button>
+                    <button onclick="filterByStatus('new')" class="px-4 py-1.5 bg-gray-200 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-300">New</button>
+                    <button onclick="filterByStatus('survey')" class="px-4 py-1.5 bg-gray-200 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-300">Survey</button>
+                    <button onclick="filterByStatus('installed')" class="px-4 py-1.5 bg-gray-200 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-300">Installed</button>
+                </div>
+
+                <div id="leadsList" class="space-y-3">
+                    <!-- Dynamic leads list -->
+                </div>
+            </div>
+
+            <!-- Projects View -->
+            <div id="projectsView" class="view-section hidden p-4 space-y-4">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white mb-4">
+                    <h2 class="text-xl font-bold mb-2">Project Pipeline</h2>
+                    <p class="text-blue-100 text-sm">Track your solar installations from lead to commissioning</p>
+                </div>
+
+                <div id="projectsList" class="space-y-4">
+                    <!-- Dynamic projects -->
+                </div>
+            </div>
+
+            <!-- Calculator View -->
+            <div id="calculatorView" class="view-section hidden p-4 space-y-4">
+                <div class="bg-white rounded-2xl p-6 card-shadow">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-sun text-orange-500 mr-2"></i>
+                        Solar System Calculator
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">System Capacity (kW)</label>
+                            <input type="range" id="systemCapacity" min="1" max="10" value="3" step="0.5" oninput="updateCalculation()" class="w-full">
+                            <div class="flex justify-between text-sm text-gray-500 mt-1">
+                                <span>1 kW</span>
+                                <span class="font-bold text-orange-600 text-lg" id="capacityValue">3 kW</span>
+                                <span>10 kW</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-orange-50 rounded-xl p-4 space-y-3">
+                            <div class="flex justify-between items-center py-2 border-b border-orange-100">
+                                <span class="text-gray-600">System Cost</span>
+                                <span class="font-bold text-gray-800">₹<span id="systemCost">0</span></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-orange-100">
+                                <span class="text-gray-600">PM Surya Ghar Subsidy</span>
+                                <span class="font-bold text-green-600">-₹<span id="subsidyAmount">0</span></span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 bg-white rounded-lg px-3">
+                                <span class="font-semibold text-gray-800">Net Payable</span>
+                                <span class="font-bold text-xl text-orange-600">₹<span id="netPayable">0</span></span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <i class="fas fa-bolt text-yellow-500 mb-1"></i>
+                                <p class="text-gray-600">Monthly Generation</p>
+                                <p class="font-bold text-gray-800"><span id="monthlyUnits">0</span> units</p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <i class="fas fa-money-bill-wave text-green-500 mb-1"></i>
+                                <p class="text-gray-600">Monthly Savings</p>
+                                <p class="font-bold text-gray-800">₹<span id="monthlySavings">0</span></p>
+                            </div>
+                        </div>
+
+                        <button onclick="generateQuotation()" class="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
+                            <i class="fas fa-file-pdf mr-2"></i>Generate Quotation
+                        </button>
+                    </div>
+                </div>
+
+                <!-- EMI Calculator -->
+                <div class="bg-white rounded-2xl p-6 card-shadow">
+                    <h3 class="font-bold text-gray-800 mb-4">Loan EMI Calculator</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Loan Amount</label>
+                            <input type="number" id="loanAmount" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Enter amount">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Interest Rate (%)</label>
+                                <input type="number" id="interestRate" value="7" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Tenure (Years)</label>
+                                <input type="number" id="loanTenure" value="5" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none">
+                            </div>
+                        </div>
+                        <button onclick="calculateEMI()" class="w-full py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-colors">Calculate EMI</button>
+                        
+                        <div id="emiResult" class="hidden bg-blue-50 rounded-xl p-4 text-center">
+                            <p class="text-sm text-gray-600">Monthly EMI</p>
+                            <p class="text-3xl font-bold text-blue-600">₹<span id="emiValue">0</span></p>
+                            <p class="text-xs text-gray-500 mt-1">Total Interest: ₹<span id="totalInterest">0</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agents View (Admin Only) -->
+            <div id="agentsView" class="view-section hidden p-4 space-y-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Agent Management</h2>
+                    <button onclick="openAddAgent()" class="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add Agent
+                    </button>
+                </div>
+                <div id="agentsList" class="space-y-3">
+                    <!-- Dynamic agents list -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="mobile-bottom-nav bg-white border-t border-gray-200 md:hidden">
+            <div class="flex justify-around items-center py-2">
+                <button onclick="switchTab('dashboard')" class="flex flex-col items-center p-2 text-orange-600">
+                    <i class="fas fa-home text-xl mb-1"></i>
+                    <span class="text-xs">Home</span>
+                </button>
+                <button onclick="switchTab('leads')" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-600">
+                    <i class="fas fa-users text-xl mb-1"></i>
+                    <span class="text-xs">Leads</span>
+                </button>
+                <button onclick="openAddLead()" class="flex flex-col items-center -mt-6">
+                    <div class="w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-white">
+                        <i class="fas fa-plus text-xl"></i>
+                    </div>
+                </button>
+                <button onclick="switchTab('projects')" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-600">
+                    <i class="fas fa-project-diagram text-xl mb-1"></i>
+                    <span class="text-xs">Projects</span>
+                </button>
+                <button onclick="switchTab('calculator')" class="flex flex-col items-center p-2 text-gray-400 hover:text-orange-600">
+                    <i class="fas fa-calculator text-xl mb-1"></i>
+                    <span class="text-xs">Calc</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Add Lead Modal -->
+    <div id="addLeadModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeAddLead()"></div>
+        <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            <div class="bg-white w-full md:w-[600px] md:max-h-[90vh] md:rounded-2xl rounded-t-2xl overflow-hidden pointer-events-auto animate-slide-up flex flex-col max-h-[90vh]">
+                <div class="gradient-bg p-4 text-white flex items-center justify-between">
+                    <h3 class="font-bold text-lg">Add New Lead</h3>
+                    <button onclick="closeAddLead()" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <form id="leadForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name *</label>
+                                <input type="text" name="customerName" required class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Full Name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
+                                <input type="tel" name="mobile" required pattern="[0-9]{10}" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="10 digit mobile">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Village/City</label>
+                                <input type="text" name="village" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Village/City">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">District</label>
+                                <input type="text" name="district" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="District">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                            <select name="state" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white">
+                                <option value="">Select State</option>
+                                <option value="UP">Uttar Pradesh</option>
+                                <option value="RJ">Rajasthan</option>
+                                <option value="MP">Madhya Pradesh</option>
+                                <option value="GJ">Gujarat</option>
+                                <option value="MH">Maharashtra</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Bill (₹)</label>
+                                <input type="number" name="billAmount" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Amount">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sanction Load (kW)</label>
+                                <input type="number" name="sanctionLoad" step="0.1" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="kW">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Roof Type</label>
+                                <select name="roofType" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white">
+                                    <option value="RCC">RCC</option>
+                                    <option value="Tin Shed">Tin Shed</option>
+                                    <option value="Asbestos">Asbestos</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+                                <select name="propertyType" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-white">
+                                    <option value="Home">Home</option>
+                                    <option value="Shop">Shop</option>
+                                    <option value="School">School</option>
+                                    <option value="Temple">Temple</option>
+                                    <option value="Mosque">Mosque</option>
+                                    <option value="Commercial">Commercial</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Interested Capacity (kW)</label>
+                            <input type="range" name="interestedCapacity" min="1" max="10" value="3" class="w-full" oninput="this.nextElementSibling.value = this.value + ' kW'">
+                            <output class="text-sm font-semibold text-orange-600">3 kW</output>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Electricity Consumer Number</label>
+                            <input type="text" name="consumerNo" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Consumer Number">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Upload Bill Photo</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-500 transition-colors cursor-pointer" onclick="document.getElementById('billPhoto').click()">
+                                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-600">Click to upload electricity bill</p>
+                                <input type="file" id="billPhoto" name="billPhoto" accept="image/*" class="hidden" onchange="handleFileSelect(this)">
+                            </div>
+                            <div id="filePreview" class="hidden mt-2 p-2 bg-orange-50 rounded-lg flex items-center justify-between">
+                                <span class="text-sm text-gray-700 truncate" id="fileName"></span>
+                                <button type="button" onclick="clearFile()" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea name="notes" rows="3" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none resize-none" placeholder="Additional notes..."></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="p-4 border-t border-gray-200 bg-gray-50">
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeAddLead()" class="flex-1 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-colors">Cancel</button>
+                        <button onclick="submitLead()" class="flex-1 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
+                            <i class="fas fa-save mr-2"></i>Save Lead
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Details Modal -->
+    <div id="leadDetailsModal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeLeadDetails()"></div>
+        <div class="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center pointer-events-none">
+            <div class="bg-white w-full md:w-[500px] md:rounded-2xl rounded-t-2xl overflow-hidden pointer-events-auto animate-slide-up max-h-[90vh] flex flex-col">
+                <div id="leadDetailsHeader" class="gradient-bg p-4 text-white">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-lg" id="detailName">Customer Name</h3>
+                            <p class="text-orange-100 text-sm" id="detailLocation">Location</p>
+                        </div>
+                        <button onclick="closeLeadDetails()" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div class="flex space-x-2 overflow-x-auto pb-2">
+                        <button onclick="updateLeadStatus('new')" class="status-btn px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">New</button>
+                        <button onclick="updateLeadStatus('survey')" class="status-btn px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">Site Survey</button>
+                        <button onclick="updateLeadStatus('docs')" class="status-btn px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">Documents</button>
+                        <button onclick="updateLeadStatus('installation')" class="status-btn px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">Installation</button>
+                        <button onclick="updateLeadStatus('completed')" class="status-btn px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 whitespace-nowrap">Completed</button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center p-3 bg-gray-50 rounded-xl">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-phone text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500">Mobile</p>
+                                <p class="font-semibold text-gray-800" id="detailMobile">+91 9876543210</p>
+                            </div>
+                            <a href="#" id="callBtn" class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white hover:bg-green-600 transition-colors">
+                                <i class="fas fa-phone-alt"></i>
+                            </a>
+                        </div>
+
+                        <div class="flex items-center p-3 bg-gray-50 rounded-xl">
+                            <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fab fa-whatsapp text-emerald-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500">WhatsApp</p>
+                                <p class="font-semibold text-gray-800">Send Message</p>
+                            </div>
+                            <a href="#" id="whatsappBtn" target="_blank" class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center text-white hover:bg-emerald-600 transition-colors">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3 bg-gray-50 rounded-xl">
+                                <p class="text-xs text-gray-500 mb-1">Monthly Bill</p>
+                                <p class="font-semibold text-gray-800" id="detailBill">₹0</p>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-xl">
+                                <p class="text-xs text-gray-500 mb-1">Interested Capacity</p>
+                                <p class="font-semibold text-gray-800" id="detailCapacity">0 kW</p>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-gray-50 rounded-xl">
+                            <p class="text-xs text-gray-500 mb-1">Roof Type</p>
+                            <p class="font-semibold text-gray-800" id="detailRoof">RCC</p>
+                        </div>
+
+                        <div class="p-3 bg-gray-50 rounded-xl">
+                            <p class="text-xs text-gray-500 mb-1">Consumer Number</p>
+                            <p class="font-semibold text-gray-800" id="detailConsumer">-</p>
+                        </div>
+
+                        <div class="p-3 bg-orange-50 rounded-xl border border-orange-100">
+                            <p class="text-xs text-orange-600 font-semibold mb-1">Estimated Quote</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">System Cost:</span>
+                                <span class="font-bold text-gray-800" id="detailSystemCost">₹0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">After Subsidy:</span>
+                                <span class="font-bold text-green-600" id="detailAfterSubsidy">₹0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-gray-800">Project Timeline</h4>
+                        <div class="relative pl-4 border-l-2 border-gray-200 space-y-4" id="timelineContainer">
+                            <!-- Dynamic timeline -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-gray-200 bg-gray-50">
+                    <button onclick="editLead()" class="w-full py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors">
+                        <i class="fas fa-edit mr-2"></i>Edit Lead
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg z-50 hidden animate-fade-in flex items-center space-x-2">
+        <i class="fas fa-check-circle text-green-400"></i>
+        <span id="toastMessage">Operation successful</span>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-2xl flex flex-col items-center space-y-3">
+            <div class="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
+            <p class="text-gray-700 font-medium">Processing...</p>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let currentUser = null;
+        let currentRole = 'agent'; // admin, agent, customer
+        let leads = [];
+        let agents = [];
+        let projects = [];
+        let selectedLead = null;
+
+        // Google Sheets Configuration
+        const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID'; // Replace with your Sheet ID
+        const API_KEY = 'YOUR_API_KEY'; // Replace with your API Key
+        const CLIENT_ID = 'YOUR_CLIENT_ID'; // Replace with your OAuth Client ID
+        
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            initCharts();
+            loadSampleData();
+        });
+
+        // Authentication
+        function checkAuth() {
+            // Check if user is logged in (from localStorage or session)
+            const user = localStorage.getItem('solarCRMUser');
+            if (user) {
+                currentUser = JSON.parse(user);
+                showApp();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('loginId').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Simulate login - In production, validate against Google Sheets or backend
+            if (id && password) {
+                currentUser = {
+                    id: id,
+                    name: 'Agent User',
+                    role: id.toLowerCase().includes('admin') ? 'admin' : 'agent',
+                    phone: '9453548609'
+                };
+                localStorage.setItem('solarCRMUser', JSON.stringify(currentUser));
+                showApp();
+                showToast('Login successful!');
+            }
+        });
+
+        function googleSignIn() {
+            // Initialize Google Sign-In
+            google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/spreadsheets',
+                callback: (tokenResponse) => {
+                    if (tokenResponse.access_token) {
+                        currentUser = {
+                            id: 'google_user',
+                            name: 'Google User',
+                            role: 'agent',
+                            token: tokenResponse.access_token
+                        };
+                        localStorage.setItem('solarCRMUser', JSON.stringify(currentUser));
+                        showApp();
+                        showToast('Google Sign-In successful!');
+                    }
+                },
+            }).requestAccessToken();
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            
+            if (currentUser.role === 'admin') {
+                document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+            }
+            
+            updateDashboard();
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('loginPassword');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('solarCRMUser');
+            location.reload();
+        }
+
+        // Navigation
+        function switchTab(tabName) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('active', 'bg-orange-50', 'text-orange-600', 'border-orange-200');
+                el.classList.add('text-gray-600');
+            });
+            
+            // Show selected view
+            document.getElementById(tabName + 'View').classList.remove('hidden');
+            
+            // Update nav styling
+            event.target.closest('button').classList.add('active', 'bg-orange-50', 'text-orange-600', 'border', 'border-orange-200');
+            event.target.closest('button').classList.remove('text-gray-600');
+            
+            if (tabName === 'dashboard') updateDashboard();
+            if (tabName === 'leads') renderLeads();
+            if (tabName === 'projects') renderProjects();
+            if (tabName === 'agents') renderAgents();
+        }
+
+        // Dashboard Functions
+        function updateDashboard() {
+            document.getElementById('totalLeads').textContent = leads.length;
+            document.getElementById('activeProjects').textContent = projects.filter(p => p.status !== 'completed').length;
+            
+            const totalKw = projects.reduce((sum, p) => sum + (parseFloat(p.capacity) || 0), 0);
+            document.getElementById('totalCapacity').textContent = totalKw.toFixed(1);
+            
+            const commission = totalKw * 3000; // Approximate commission calculation
+            document.getElementById('totalCommission').textContent = commission.toLocaleString();
+            
+            renderRecentLeads();
+        }
+
+        function renderRecentLeads() {
+            const container = document.getElementById('recentLeadsList');
+            const recent = leads.slice(0, 5);
+            
+            container.innerHTML = recent.map(lead => `
+                <div onclick="openLeadDetails('${lead.id}')" class="flex items-center p-3 bg-gray-50 rounded-xl hover:bg-orange-50 transition-colors cursor-pointer border border-transparent hover:border-orange-200">
+                    <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+                        ${lead.name.charAt(0)}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-semibold text-gray-800 truncate">${lead.name}</h4>
+                        <p class="text-xs text-gray-500">${lead.village || 'Unknown location'} • ${lead.capacity}kW</p>
+                    </div>
+                    <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(lead.status)}">
+                        ${lead.status || 'New'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Leads Management
+        function loadSampleData() {
+            // Sample data for demonstration
+            leads = [
+                { id: '1', name: 'Rajesh Kumar', mobile: '9876543210', village: 'Lucknow', district: 'Lucknow', state: 'UP', billAmount: 2500, capacity: 3, roofType: 'RCC', propertyType: 'Home', status: 'new', date: '2024-03-10' },
+                { id: '2', name: 'Priya Singh', mobile: '9876543211', village: 'Kanpur', district: 'Kanpur', state: 'UP', billAmount: 1800, capacity: 2, roofType: 'Tin Shed', propertyType: 'Shop', status: 'survey', date: '2024-03-09' },
+                { id: '3', name: 'Amit Sharma', mobile: '9876543212', village: 'Varanasi', district: 'Varanasi', state: 'UP', billAmount: 3500, capacity: 5, roofType: 'RCC', propertyType: 'Home', status: 'installation', date: '2024-03-08' },
+                { id: '4', name: 'Sunita Devi', mobile: '9876543213', village: 'Gorakhpur', district: 'Gorakhpur', state: 'UP', billAmount: 1200, capacity: 1, roofType: 'RCC', propertyType: 'Home', status: 'completed', date: '2024-03-07' }
+            ];
+            
+            projects = [...leads];
+            agents = [
+                { id: 'AG001', name: 'Vikram Agent', mobile: '9453548609', leads: 12, commission: 45000 },
+                { id: 'AG002', name: 'Neha Sharma', mobile: '9453548610', leads: 8, commission: 32000 }
+            ];
+        }
+
+        function openAddLead() {
+            document.getElementById('addLeadModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddLead() {
+            document.getElementById('addLeadModal').classList.add('hidden');
+            document.body.style.overflow = '';
+            document.getElementById('leadForm').reset();
+            clearFile();
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('fileName').textContent = input.files[0].name;
+                document.getElementById('filePreview').classList.remove('hidden');
+            }
+        }
+
+        function clearFile() {
+            document.getElementById('billPhoto').value = '';
+            document.getElementById('filePreview').classList.add('hidden');
+        }
+
+        function submitLead() {
+            const form = document.getElementById('leadForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const formData = new FormData(form);
+            const newLead = {
+                id: Date.now().toString(),
+                name: formData.get('customerName'),
+                mobile: formData.get('mobile'),
+                village: formData.get('village'),
+                district: formData.get('district'),
+                state: formData.get('state'),
+                billAmount: formData.get('billAmount'),
+                capacity: formData.get('interestedCapacity'),
+                roofType: formData.get('roofType'),
+                propertyType: formData.get('propertyType'),
+                consumerNo: formData.get('consumerNo'),
+                status: 'new',
+                date: new Date().toISOString().split('T')[0],
+                notes: formData.get('notes')
+            };
+            
+            leads.unshift(newLead);
+            
+            // Save to Google Sheets (simulated)
+            saveToGoogleSheets(newLead);
+            
+            closeAddLead();
+            showToast('Lead added successfully!');
+            
+            if (!document.getElementById('leadsView').classList.contains('hidden')) {
+                renderLeads();
+            }
+            updateDashboard();
+            
+            // Send WhatsApp notification
+            sendWhatsAppNotification(newLead.mobile, `Thank you ${newLead.name} for your interest in solar installation. Our team will contact you shortly. - FILTER GROUPS`);
+        }
+
+        function saveToGoogleSheets(data) {
+            // In production, use Google Sheets API
+            console.log('Saving to Google Sheets:', data);
+            // gapi.client.sheets.spreadsheets.values.append({
+            //     spreadsheetId: SHEET_ID,
+            //     range: 'Leads!A1',
+            //     valueInputOption: 'RAW',
+            //     resource: { values: [[data.name, data.mobile, data.village, data.capacity, data.status]] }
+            // });
+        }
+
+        function renderLeads() {
+            const container = document.getElementById('leadsList');
+            const searchTerm = document.getElementById('searchLeads').value.toLowerCase();
+            
+            const filtered = leads.filter(lead => 
+                lead.name.toLowerCase().includes(searchTerm) || 
+                lead.mobile.includes(searchTerm) ||
+                lead.village.toLowerCase().includes(searchTerm)
+            );
+            
+            container.innerHTML = filtered.map(lead => `
+                <div onclick="openLeadDetails('${lead.id}')" class="bg-white p-4 rounded-2xl card-shadow border-l-4 ${getStatusBorderColor(lead.status)} cursor-pointer hover:shadow-lg transition-all">
+                    <div class="flex items-start justify-between mb-2">
+                        <div>
+                            <h4 class="font-bold text-gray-800">${lead.name}</h4>
+                            <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-1 text-orange-400"></i>${lead.village}, ${lead.district}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(lead.status)}">
+                            ${formatStatus(lead.status)}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-3 pt-3 border-t border-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-gray-600"><i class="fas fa-bolt text-yellow-500 mr-1"></i>${lead.capacity} kW</span>
+                            <span class="text-gray-600"><i class="fas fa-home text-blue-500 mr-1"></i>${lead.propertyType}</span>
+                        </div>
+                        <span class="text-gray-400 text-xs">${lead.date}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterLeads() {
+            renderLeads();
+        }
+
+        function filterByStatus(status) {
+            // Update active filter button
+            event.target.parentElement.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('bg-orange-500', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            event.target.classList.remove('bg-gray-200', 'text-gray-700');
+            event.target.classList.add('bg-orange-500', 'text-white');
+            
+            // Filter logic
+            const container = document.getElementById('leadsList');
+            const filtered = status === 'all' ? leads : leads.filter(l => l.status === status);
+            
+            container.innerHTML = filtered.map(lead => `
+                <div onclick="openLeadDetails('${lead.id}')" class="bg-white p-4 rounded-2xl card-shadow border-l-4 ${getStatusBorderColor(lead.status)} cursor-pointer hover:shadow-lg transition-all">
+                    <div class="flex items-start justify-between mb-2">
+                        <div>
+                            <h4 class="font-bold text-gray-800">${lead.name}</h4>
+                            <p class="text-sm text-gray-500"><i class="fas fa-map-marker-alt mr-1 text-orange-400"></i>${lead.village}, ${lead.district}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(lead.status)}">
+                            ${formatStatus(lead.status)}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-3 pt-3 border-t border-gray-100">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-gray-600"><i class="fas fa-bolt text-yellow-500 mr-1"></i>${lead.capacity} kW</span>
+                            <span class="text-gray-600"><i class="fas fa-home text-blue-500 mr-1"></i>${lead.propertyType}</span>
+                        </div>
+                        <span class="text-gray-400 text-xs">${lead.date}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openLeadDetails(leadId) {
+            selectedLead = leads.find(l => l.id === leadId);
+            if (!selectedLead) return;
+            
+            document.getElementById('detailName').textContent = selectedLead.name;
+            document.getElementById('detailLocation').textContent = `${selectedLead.village}, ${selectedLead.district}, ${selectedLead.state}`;
+            document.getElementById('detailMobile').textContent = '+91 ' + selectedLead.mobile;
+            document.getElementById('detailBill').textContent = '₹' + selectedLead.billAmount;
+            document.getElementById('detailCapacity').textContent = selectedLead.capacity + ' kW';
+            document.getElementById('detailRoof').textContent = selectedLead.roofType;
+            document.getElementById('detailConsumer').textContent = selectedLead.consumerNo || '-';
+            
+            // Calculate costs
+            const costPerKw = 45000; // Average cost per kW
+            const systemCost = selectedLead.capacity * costPerKw;
+            const subsidy = calculateSubsidy(selectedLead.capacity);
+            const afterSubsidy = systemCost - subsidy;
+            
+            document.getElementById('detailSystemCost').textContent = '₹' + systemCost.toLocaleString();
+            document.getElementById('detailAfterSubsidy').textContent = '₹' + afterSubsidy.toLocaleString();
+            
+            // Update contact links
+            document.getElementById('callBtn').href = `tel:+91${selectedLead.mobile}`;
+            document.getElementById('whatsappBtn').href = `https://wa.me/91${selectedLead.mobile}?text=Hello ${selectedLead.name}, this is FILTER GROUPS regarding your solar inquiry.`;
+            
+            // Update timeline
+            updateTimeline(selectedLead.status);
+            
+            document.getElementById('leadDetailsModal').classList.remove('hidden');
+        }
+
+        function closeLeadDetails() {
+            document.getElementById('leadDetailsModal').classList.add('hidden');
+            selectedLead = null;
+        }
+
+        function updateTimeline(currentStatus) {
+            const stages = [
+                { id: 'new', label: 'Lead Created', icon: 'fa-user-plus' },
+                { id: 'survey', label: 'Site Survey', icon: 'fa-map-marked-alt' },
+                { id: 'docs', label: 'Documentation', icon: 'fa-file-alt' },
+                { id: 'installation', label: 'Installation', icon: 'fa-tools' },
+                { id: 'completed', label: 'Completed', icon: 'fa-check-circle' }
+            ];
+            
+            const currentIndex = stages.findIndex(s => s.id === currentStatus);
+            
+            const container = document.getElementById('timelineContainer');
+            container.innerHTML = stages.map((stage, index) => `
+                <div class="relative">
+                    <div class="absolute -left-[21px] top-0 w-4 h-4 rounded-full ${index <= currentIndex ? 'bg-orange-500' : 'bg-gray-300'} border-2 border-white shadow"></div>
+                    <div class="ml-2">
+                        <p class="text-sm font-medium ${index <= currentIndex ? 'text-gray-800' : 'text-gray-400'}">${stage.label}</p>
+                        <p class="text-xs text-gray-500">${index <= currentIndex ? 'Completed' : 'Pending'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateLeadStatus(newStatus) {
+            if (selectedLead) {
+                selectedLead.status = newStatus;
+                showToast(`Status updated to ${formatStatus(newStatus)}`);
+                updateTimeline(newStatus);
+                renderLeads();
+                updateDashboard();
+            }
+        }
+
+        // Calculator Functions
+        function updateCalculation() {
+            const capacity = parseFloat(document.getElementById('systemCapacity').value);
+            document.getElementById('capacityValue').textContent = capacity + ' kW';
+            
+            const costPerKw = 45000;
+            const systemCost = capacity * costPerKw;
+            const subsidy = calculateSubsidy(capacity);
+            const netPayable = systemCost - subsidy;
+            
+            document.getElementById('systemCost').textContent = systemCost.toLocaleString();
+            document.getElementById('subsidyAmount').textContent = subsidy.toLocaleString();
+            document.getElementById('netPayable').textContent = netPayable.toLocaleString();
+            
+            // Monthly generation (approx 4 units per kW per day)
+            const monthlyUnits = capacity * 4 * 30;
+            document.getElementById('monthlyUnits').textContent = monthlyUnits;
+            
+            // Monthly savings (approx ₹8 per unit)
+            const monthlySavings = monthlyUnits * 8;
+            document.getElementById('monthlySavings').textContent = monthlySavings.toLocaleString();
+        }
+
+        function calculateSubsidy(capacity) {
+            // PM Surya Ghar Subsidy Structure [^4^]
+            if (capacity <= 2) {
+                return capacity * 30000; // ₹30,000 per kW up to 2kW
+            } else if (capacity <= 3) {
+                return 60000 + ((capacity - 2) * 18000); // ₹60,000 for 2kW + ₹18,000 per additional kW
+            } else {
+                return 78000; // Maximum subsidy capped at ₹78,000 for 3kW and above [^4^]
+            }
+        }
+
+        function calculateEMI() {
+            const principal = parseFloat(document.getElementById('loanAmount').value) || 0;
+            const rate = parseFloat(document.getElementById('interestRate').value) || 7;
+            const years = parseFloat(document.getElementById('loanTenure').value) || 5;
+            
+            const monthlyRate = rate / 12 / 100;
+            const months = years * 12;
+            
+            const emi = principal * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+            const totalPayment = emi * months;
+            const totalInterest = totalPayment - principal;
+            
+            document.getElementById('emiValue').textContent = Math.round(emi).toLocaleString();
+            document.getElementById('totalInterest').textContent = Math.round(totalInterest).toLocaleString();
+            document.getElementById('emiResult').classList.remove('hidden');
+        }
+
+        function generateQuotation() {
+            showToast('Generating PDF Quotation...');
+            // In production, generate PDF using jsPDF or similar
+            setTimeout(() => {
+                alert('Quotation PDF downloaded successfully!');
+            }, 1500);
+        }
+
+        // Projects View
+        function renderProjects() {
+            const container = document.getElementById('projectsList');
+            
+            container.innerHTML = projects.map(project => {
+                const progress = getProjectProgress(project.status);
+                return `
+                <div class="bg-white rounded-2xl p-4 card-shadow">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-bold text-gray-800">${project.name}</h4>
+                            <p class="text-sm text-gray-500">${project.village} • ${project.capacity}kW</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(project.status)}">
+                            ${formatStatus(project.status)}
+                        </span>
+                    </div>
+                    
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="bg-gradient-to-r from-orange-400 to-orange-600 h-2 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mb-3">
+                        <span>Progress</span>
+                        <span>${progress}%</span>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="openLeadDetails('${project.id}')" class="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">View Details</button>
+                        <button onclick="updateProjectStatus('${project.id}')" class="flex-1 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors">Update Status</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function getProjectProgress(status) {
+            const progressMap = {
+                'new': 10,
+                'survey': 25,
+                'docs': 40,
+                'installation': 70,
+                'netmetering': 90,
+                'completed': 100
+            };
+            return progressMap[status] || 0;
+        }
+
+        // Agents Management
+        function renderAgents() {
+            const container = document.getElementById('agentsList');
+            container.innerHTML = agents.map(agent => `
+                <div class="bg-white p-4 rounded-2xl card-shadow flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg mr-3">
+                            ${agent.name.charAt(0)}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">${agent.name}</h4>
+                            <p class="text-sm text-gray-500">${agent.id} • ${agent.leads} leads</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-green-600">₹${agent.commission.toLocaleString()}</p>
+                        <p class="text-xs text-gray-500">Commission</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openAddAgent() {
+            const name = prompt('Enter Agent Name:');
+            const mobile = prompt('Enter Mobile Number:');
+            if (name && mobile) {
+                agents.push({
+                    id: 'AG' + String(agents.length + 1).padStart(3, '0'),
+                    name: name,
+                    mobile: mobile,
+                    leads: 0,
+                    commission: 0
+                });
+                renderAgents();
+                showToast('Agent added successfully!');
+            }
+        }
+
+        // WhatsApp Integration
+        function openWhatsApp() {
+            const phone = prompt('Enter mobile number (with country code):');
+            if (phone) {
+                window.open(`https://wa.me/${phone}?text=Hello from FILTER GROUPS!`, '_blank');
+            }
+        }
+
+        function sendWhatsAppNotification(phone, message) {
+            // In production, use WhatsApp Business API
+            console.log(`Sending WhatsApp to ${phone}: ${message}`);
+        }
+
+        // Utility Functions
+        function getStatusColor(status
+        // Utility Functions
+        function getStatusColor(status) {
+            const colors = {
+                'new': 'bg-blue-100 text-blue-700',
+                'survey': 'bg-yellow-100 text-yellow-700',
+                'docs': 'bg-purple-100 text-purple-700',
+                'installation': 'bg-orange-100 text-orange-700',
+                'netmetering': 'bg-indigo-100 text-indigo-700',
+                'completed': 'bg-green-100 text-green-700'
+            };
+            return colors[status] || 'bg-gray-100 text-gray-700';
+        }
+
+        function getStatusBorderColor(status) {
+            const colors = {
+                'new': 'border-blue-500',
+                'survey': 'border-yellow-500',
+                'docs': 'border-purple-500',
+                'installation': 'border-orange-500',
+                'netmetering': 'border-indigo-500',
+                'completed': 'border-green-500'
+            };
+            return colors[status] || 'border-gray-300';
+        }
+
+        function formatStatus(status) {
+            const labels = {
+                'new': 'New Lead',
+                'survey': 'Site Survey',
+                'docs': 'Documentation',
+                'installation': 'Installation',
+                'netmetering': 'Net Metering',
+                'completed': 'Completed'
+            };
+            return labels[status] || status;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function showNotifications() {
+            showToast('No new notifications');
+        }
+
+        function toggleProfile() {
+            if (confirm('Do you want to logout?')) {
+                logout();
+            }
+        }
+
+        function showRegistration() {
+            const name = prompt('Enter your full name:');
+            const mobile = prompt('Enter your mobile number:');
+            if (name && mobile) {
+                showToast('Registration request submitted! Admin will approve shortly.');
+            }
+        }
+
+        function openSiteSurvey() {
+            showToast('Opening Site Survey...');
+            // In production, open camera or map
+        }
+
+        function openCalculator() {
+            switchTab('calculator');
+        }
+
+        function updateProjectStatus(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (project) {
+                const statuses = ['new', 'survey', 'docs', 'installation', 'netmetering', 'completed'];
+                const currentIndex = statuses.indexOf(project.status);
+                const nextStatus = statuses[currentIndex + 1] || 'completed';
+                project.status = nextStatus;
+                renderProjects();
+                showToast(`Project updated to ${formatStatus(nextStatus)}`);
+            }
+        }
+
+        function editLead() {
+            showToast('Edit functionality coming soon!');
+        }
+
+        // Chart Initialization
+        function initCharts() {
+            const ctx = document.getElementById('performanceChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Leads',
+                            data: [12, 19, 15, 25, 22, 30],
+                            borderColor: '#f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Installations',
+                            data: [5, 8, 12, 15, 18, 20],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize calculation on load
+        window.onload = function() {
+            updateCalculation();
+        };
+    </script>
+</body>
+  </html>
